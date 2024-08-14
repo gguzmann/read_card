@@ -1,5 +1,4 @@
 import { Camara } from "@/components/Camara";
-import { CameraTest } from "@/components/CameraTest";
 import Image from "next/image";
 
 export default function Home() {
