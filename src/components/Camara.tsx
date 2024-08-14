@@ -40,7 +40,9 @@ export const Camara = () => {
                 height={600}
                 width={600}
                 screenshotFormat="image/png"
+                videoConstraints={{ facingMode: { exact: "environment" } }}
                 ref={camera} />
+
             <button onClick={takePhoto} className="bg-black text-white hover:bg-opacity-30 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-11 rounded-md px-8 absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
