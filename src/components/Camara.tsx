@@ -76,7 +76,7 @@ export const Camara = () => {
         const clear2 = clear1.map(x => x.length > 0 && x)
 
         console.log('<-- getAllNames ---->')
-        const name = 'ETRE' // clear2[0][0]
+        const name = clear2[0][0]
         setTexto(name)
         const all = await getAllNames(name)
         setOptions(all)
