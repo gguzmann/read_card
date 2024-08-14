@@ -8,7 +8,7 @@ import { callCard } from "@/utils/apicall";
 
 export const CameraTest = () => {
     const camera = useRef<Webcam | null>(null)
-    const [power, setPower] = useState(true)
+    const [power, setPower] = useState(false)
     const [image, setImage] = useState<string | null>(null)
     const [imageCard, setImageCard] = useState<string | null>(null)
     const [texto, setTexto] = useState<string[]>([])

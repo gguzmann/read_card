@@ -3,11 +3,11 @@ import { Cards } from 'scryfall-api';
 // LLAMAR POR NOMBRE: Cards.byName
 // LLAMAR Cards.bySet con collector_number y set campos en español
 // Cards.autoCompleteName
-export const callCard = async () => {
+export const callCard = async (x: string) => {
 
 
-
-    const card: any = await Cards.byName('Battering Sliver', true)
+    console.log(x)
+    const card: any = await Cards.byName(x, true)
 
 
 
@@ -17,11 +17,13 @@ export const callCard = async () => {
 
 }
 
-export const getAllNames = async () => {
-    const results = await Cards.autoCompleteName('Sliver');
+export const getAllNames = async (name: string) => {
+    console.log('Name:', name)
+    const results = await Cards.autoCompleteName(name);
 
     for (const result of results) {
         console.log(result);
 
     }
+    return results
 }
