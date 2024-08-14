@@ -7,13 +7,23 @@ export const callCard = async (x: string) => {
 
 
     console.log(x)
-    const card: any = await Cards.byName(x, true)
+    try {
+
+        const card: any = await Cards.byName(x, true)
+        console.log('card', card)
+        const cardEsp = await Cards.bySet(card.set, card.collector_number, 'es')
+        console.log('cardEs', cardEsp)
+        if (!cardEsp) {
+            throw new Error('Card not found in set');
+        }
+        return cardEsp?.image_uris?.large
+
+    } catch (error) {
+        console.log('error 1')
+        return 'error'
+    }
 
 
-
-    const cardEsp = await Cards.bySet(card.set, card.collector_number, 'es')
-
-    return cardEsp?.image_uris?.large
 
 }
 

@@ -38,8 +38,13 @@ export const Camara = () => {
     const [options, setOptions] = useState<string[]>([])
     const [imageCard, setImageCard] = useState<string | null>(null)
     const [texto, setTexto] = useState<string | null>(null)
+    const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
     const takePhoto = () => {
+        setImage(null)
+        setImageCard(null)
+        setTexto(null)
+        setErrorMsg(null)
         if (!image) {
             const img = camera?.current?.getScreenshot() ?? null
             console.log(img)
@@ -56,7 +61,7 @@ export const Camara = () => {
             return
         }
         const base64string = img.split(',')[1];
-        const worker = await createWorker("eng");
+        const worker = await createWorker("spa");
         const ret = await worker.recognize(Buffer.from(base64string, 'base64'));
         // const ret = await worker.recognize('https://cards.scryfall.io/large/front/d/0/d0b3ecf1-5c00-4aa0-92fd-54829495a3cf.jpg?1562431742');
 
@@ -74,23 +79,45 @@ export const Camara = () => {
 
 
         const clear2 = clear1.map(x => x.length > 0 && x)
-
+        console.log(clear2)
         console.log('<-- getAllNames ---->')
         const name = clear2[0][0]
+        console.log('<-- name ---->', name)
         setTexto(name)
-        const all = await getAllNames(name)
-        setOptions(all)
 
+        const all = await getAllNames(name)
+        if (all.length == 0) {
+            console.log('error')
+            setErrorMsg(name + ' no encontrado')
+            setTexto(null)
+            return
+        }
+        setErrorMsg(null)
+        setOptions(all)
         await worker.terminate();
     }
 
     const test = async (x: string) => {
         const card = await callCard(x) ?? ''
+        console.log('return card', card)
+        if (card === 'error') {
+            setErrorMsg('Carta no encontrada en español')
+            return
+        }
+        setErrorMsg(null)
         setImageCard(card)
+
+    }
+
+    const cancel = () => {
+        setTexto(null)
+        setImageCard(null)
+
     }
 
     return (
         <>
+            {errorMsg && <span className="m-10 text-black bg-red-400">{errorMsg}</span>}
             {
                 options.length == 0 &&
                 <>
@@ -127,7 +154,7 @@ export const Camara = () => {
             {
                 imageCard &&
                 <div>
-                    <button onClick={() => setImageCard(null)} type="button" className="absolute rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500  focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                    <button onClick={cancel} type="button" className="absolute rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500  focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
                         <span className="sr-only">Close menu</span>
                         <svg className="h-10 w-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
