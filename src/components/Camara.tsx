@@ -66,7 +66,7 @@ export const Camara = () => {
         setImageCard(null)
         setTexto(null)
         setErrorMsg(null)
-        const imageSrc = camera.current.getScreenshot() ?? '';
+        const imageSrc = camera?.current?.getScreenshot() ?? ''
         const base64String = imageSrc.split(',')[1]; // Extraer solo la parte Base64
         console.log(base64String)
 
