@@ -1,10 +1,11 @@
 "use client"
-
 import { callCard, getAllNames } from "@/utils/apicall";
 import { useRef, useState } from "react"
 import Webcam from "react-webcam"
 import { createWorker } from "tesseract.js";
-
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import Image from 'next/image'
+import card1 from '../../public/card1.png'
 const cardText = [
     "| Acidic Sliver e\n",
     "E 7 Y E\n",
@@ -40,64 +41,9 @@ export const Camara = () => {
     const [texto, setTexto] = useState<string | null>(null)
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-    const takePhoto = () => {
-        setImage(null)
-        setImageCard(null)
-        setTexto(null)
-        setErrorMsg(null)
-        if (!image) {
-            const img = camera?.current?.getScreenshot() ?? null
-            console.log(img)
-            readImage(img)
-            setImage(img)
-        } else {
-            setImage(null)
-        }
-    }
-
-    const readImage = async (img: any) => {
-        if (imageCard) {
-            setImage(null)
-            return
-        }
-        const base64string = img.split(',')[1];
-        const worker = await createWorker("spa");
-        const ret = await worker.recognize(Buffer.from(base64string, 'base64'));
-        // const ret = await worker.recognize('https://cards.scryfall.io/large/front/d/0/d0b3ecf1-5c00-4aa0-92fd-54829495a3cf.jpg?1562431742');
-
-        console.log(ret.data.text);
-        console.log('<------>')
-        console.log(ret.data.lines)
-        console.log(ret.data.lines[0].text);
-        console.log(ret.data.lines)
-        const clear1 = ret.data.lines.map((x: any) => x.text.replace(/[^a-zA-Z\s]/g, '')  // Elimina caracteres no alfabéticos, excepto espacios
-            .trim()                       // Elimina espacios en blanco al principio y al final
-            .replace(/\s+/g, ' ')
-            .split(/\s+/)          // Divide en palabras por espacios
-            .filter((palabra: any) => palabra.length > 2)
-        )
 
 
-        const clear2 = clear1.map(x => x.length > 0 && x)
-        console.log(clear2)
-        console.log('<-- getAllNames ---->')
-        const name = clear2[0][0]
-        console.log('<-- name ---->', name)
-        setTexto(name)
-
-        const all = await getAllNames(name)
-        if (all.length == 0) {
-            console.log('error')
-            setErrorMsg(name + ' no encontrado')
-            setTexto(null)
-            return
-        }
-        setErrorMsg(null)
-        setOptions(all)
-        await worker.terminate();
-    }
-
-    const test = async (x: string) => {
+    const searchCard = async (x: string) => {
         const card = await callCard(x) ?? ''
         console.log('return card', card)
         if (card === 'error') {
@@ -110,16 +56,51 @@ export const Camara = () => {
     }
 
     const cancel = () => {
+        setImage(null)
         setTexto(null)
         setImageCard(null)
 
     }
 
+    const handleGenerateContent = async () => {
+        setImageCard(null)
+        setTexto(null)
+        setErrorMsg(null)
+        const imageSrc = camera.current.getScreenshot() ?? '';
+        const base64String = imageSrc.split(',')[1]; // Extraer solo la parte Base64
+        console.log(base64String)
+
+        setImage(base64String);
+        try {
+            const response = await fetch('/api', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt, image }),
+            });
+
+            const data = await response.json();
+            setTexto(data.msg)
+            console.log(data)
+            console.log(data.msg)
+            if (data.status == 460 || data.msg == '99') {
+                setErrorMsg('Imagen no encontrada')
+                return
+            }
+
+            searchCard(data.msg)
+        } catch (error) {
+            console.error('Error generating content:', error);
+        }
+    };
+
     return (
         <>
             {errorMsg && <span className="m-10 text-black bg-red-400">{errorMsg}</span>}
             {
-                options.length == 0 &&
+                // options.length == 0 &&
+                !imageCard &&
                 <>
                     <div className="relative w-full max-w-md">
 
@@ -128,9 +109,10 @@ export const Camara = () => {
                             width={600}
                             screenshotFormat="image/png"
                             videoConstraints={{ facingMode: { exact: "environment" } }}
+                            //videoConstraints={{ facingMode: 'user' }}
                             ref={camera} />
                     </div>
-                    <button onClick={takePhoto} className="bg-black text-white hover:bg-opacity-30 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-11 rounded-md px-8 absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+                    <button onClick={handleGenerateContent} className="bg-black text-white hover:bg-opacity-30 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-11 rounded-md px-8 absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
@@ -147,8 +129,8 @@ export const Camara = () => {
                             <circle cx="12" cy="13" r="3"></circle>
                         </svg>
                         <span className="sr-only">Capture Photo</span>
-                    </button>
 
+                    </button>
                 </>
             }
             {
@@ -165,7 +147,7 @@ export const Camara = () => {
             }
 
             {
-                options.length > 0 &&
+                imageCard &&
                 <>
                     <div className="mt-6 w-full max-w-md space-y-4 animate__animated animate__backInUp max-h-[500px] overflow-y-scroll">
                         <div className="rounded-lg border bg-card text-card-foreground shadow-sm" data-v0-t="card">
@@ -175,7 +157,7 @@ export const Camara = () => {
                             <div className="p-6 grid gap-2">
                                 {
                                     options.map((x, i) => (
-                                        <button key={i} onClick={() => test(x)} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
+                                        <button key={i} onClick={() => searchCard(x)} className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2">
                                             {x}
                                         </button>
 
@@ -187,7 +169,7 @@ export const Camara = () => {
                             </div>
                         </div>
                     </div>
-                    <button onClick={() => setOptions([])} className="bg-black text-white hover:bg-opacity-30 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-11 rounded-md px-8 absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+                    <button onClick={cancel} className="bg-black text-white hover:bg-opacity-30 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-11 rounded-md px-8 absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
                         <span className="sr-only">Close menu</span>
                         <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
