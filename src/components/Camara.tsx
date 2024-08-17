@@ -149,7 +149,7 @@ export const Camara = () => {
             {
                 imageCard &&
                 <>
-                    <div className="mt-6 w-full max-w-md space-y-4 animate__animated animate__backInUp max-h-[500px] overflow-y-scroll">
+                    {/* <div className="mt-6 w-full max-w-md space-y-4 animate__animated animate__backInUp max-h-[500px] overflow-y-scroll">
                         <div className="rounded-lg border bg-card text-card-foreground shadow-sm" data-v0-t="card">
                             <div className="flex flex-col space-y-1.5 p-6">
                                 <h3 className="whitespace-nowrap text-2xl font-semibold leading-none tracking-tight">Suggested {texto}</h3>
@@ -168,7 +168,7 @@ export const Camara = () => {
 
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                     <button onClick={cancel} className="bg-black text-white hover:bg-opacity-30 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-11 rounded-md px-8 absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
                         <span className="sr-only">Close menu</span>
                         <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
