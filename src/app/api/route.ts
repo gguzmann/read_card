@@ -8,9 +8,9 @@ export async function POST(req: NextRequest, res: NextResponse) {
     try {
         // const { prompt, image } = req.body;
         const {prompt, image} = await req.json()
-
+      const key = process.env.NEXT_PUBLIC_GOOGLE_API_KEY
         const genAI = new GoogleGenerativeAI(
-          "AIzaSyDJBpakSSAtw0H23DP_x5TfLCquZn37L-Q",
+          key
       );
 
       const img = {
